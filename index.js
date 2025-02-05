@@ -7,10 +7,11 @@ const tooLowMessage = document.getElementById('too-low');
 const maxGuessesMessage = document.getElementById('max-guesses');
 const numberOfGuessesMessage = document.getElementById('number-of-guesses');
 const correctMessage = document.getElementById('correct');
+const invalidInputMessage = document.getElementById('invalid-input');
 
-let targetNumber;
-let attempts = 0;
-const maxNumberOfAttempts = 5;
+let targetNumber;//stores randomly generated number
+let attempts = 0;//tracks number guess player made
+const maxNumberOfAttempts = 5;//constant stores max number allowed
 
 // Returns a random number from min (inclusive) to max (exclusive)
 // Usage:
@@ -25,8 +26,26 @@ function getRandomNumber(min, max) {
 function checkGuess() {
   // Get value from guess input element
   const guess = parseInt(guessInput.value, 10);
-  attempts = attempts + 1;
 
+  //check for validity from the start
+  //could output different messages based on too hight, too low or NaN but i'm in a hurry...
+  if(isNaN(guess) || guess < 1 || guess > 99) {
+    hideAllMessages();
+    invalidInputMessage.style.display = ''; // Show invalid input message
+
+    if(isNaN(guess)) {
+      invalidInputMessage.innerHTML = 'Please enter a number.'
+    } else if(guess < 1) {
+      invalidInputMessage.innerHTML = 'Number must be greater than 1.'
+    } else if(guess > 99) {
+      invalidInputMessage.innerHTML = 'Number must be less than 99.'
+    }
+
+    guessInput.value = ''; //clears the input field
+    return;
+  }
+
+  attempts = attempts + 1;
   hideAllMessages();
 
   if (guess === targetNumber) {
@@ -43,47 +62,49 @@ function checkGuess() {
     if (guess < targetNumber) {
       tooLowMessage.style.display = '';
     } else {
-      tooLowMessage.style.display = '';
+      tooHighMessage.style.display = '';
     }
 
     const remainingAttempts = maxNumberOfAttempts - attempts;
 
+    //use a singular or plural form based on remaining attempts
+    const guessText = remainingAttempts === 1 ? "guess" : "guesses";
+
     numberOfGuessesMessage.style.display = '';
-    numberOfGuessesMessage.innerHTML = `You guessed ${guess}. <br> ${remainingAttempts} guesses remaining`;
+    numberOfGuessesMessage.innerHTML = `You guessed ${guess}. <br> ${remainingAttempts} ${guessText} remaining`;
   }
 
-  if (attempts ==== maxNumberOfAttempts) {
+  if (attempts === maxNumberOfAttempts) {
     submitButton.disabled = true;
     guessInput.disabled = true;
   }
-
   guessInput.value = '';
-
   resetButton.style.display = '';
 }
 
+//hides all messages when you call this function
 function hideAllMessages() {
-  for (let elementIndex = 0; elementIndex <= messages.length; elementIndex++) {
-    messages[elementIndex].style.display = 'none';
+  for (let element of messages) {
+    element.style.display = 'none';
   }
 }
-
-funtion setup() {
+// this function initializes or resets the game
+function setup() {
   // Get random number
   targetNumber = getRandomNumber(1, 100);
-  console.log(`target number: ${targetNumber}`);
+  console.log(`target number: ${targetNumber}`);//this logs the random number to the console
 
   // Reset number of attempts
-  maxNumberOfAttempts = 0;
+  attempts = 0;
 
   // Enable the input and submit button
-  submitButton.disabeld = false;
+  submitButton.disabled = false;
   guessInput.disabled = false;
-
+  //hides the reset button and the messages
   hideAllMessages();
   resetButton.style.display = 'none';
 }
-
+//event listeners based on user clicking the button, runs the callbacks 
 submitButton.addEventListener('click', checkGuess);
 resetButton.addEventListener('click', setup);
 
